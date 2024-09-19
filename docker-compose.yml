@@ -1,0 +1,52 @@
+networks:
+  my-network:
+
+volumes:
+  mysql-data:
+
+services:
+  # MySQL service
+  dbserver:
+    image: mysql:8.0
+    container_name: mysql-container
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 8YOgpGMQ
+      MYSQL_DATABASE: test_db
+      MYSQL_USER: test_user
+      MYSQL_PASSWORD: pcZ2LjjG
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    networks:
+      - my-network
+
+  # phpMyAdmin service
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin-container
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: dbserver
+      MYSQL_ROOT_PASSWORD: doc
+    depends_on:
+      - dbserver
+    networks:
+      - my-network
+
+  # Apache and PHP service
+  webserver:
+    container_name: php-apache-container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./www/:/var/www/html
+    depends_on:
+      - dbserver
+      - phpmyadmin
+    networks:
+      - my-network
